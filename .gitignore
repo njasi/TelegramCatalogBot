@@ -1,0 +1,8 @@
+.env_deploy
+.env_test
+node_modules
+the_entire_beemovie_script.txt
+temp/*
+script/forward.html
+script/test.js
+script/test2.js
