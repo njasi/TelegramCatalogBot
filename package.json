@@ -5,7 +5,7 @@
   "main": "index.js",
   "scripts": {
     "start": "node server",
-    "start-dep": "NODE_ENV=production_test node server",
+    "start-dep": "NODE_ENV=production_test nodemon server -e html,js,scss --ignore public --ignore client",
     "start-dev": "nodemon server -e html,js,scss --ignore public --ignore client",
     "seed": "node script/seed/seed",
     "update-seq": "node script/seed/update_sequences.js",

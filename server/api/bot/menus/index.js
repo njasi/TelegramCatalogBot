@@ -84,6 +84,7 @@ async function detectAndSwapMenu(query, params, bot) {
 
 
 const MENUS = {
+  ...require("./content"),
   ...require("./basic"),
   ...require("./help_menus"),
   ...require("./settings"),

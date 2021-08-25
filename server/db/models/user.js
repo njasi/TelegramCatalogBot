@@ -7,6 +7,7 @@ const User = db.define("user", {
    */
   telegram_id: {
     type: Sequelize.INTEGER,
+    unique: true,
   },
   /**
    * -1 state = not editing description

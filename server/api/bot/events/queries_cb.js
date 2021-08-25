@@ -82,13 +82,33 @@ bot.on("callback_query", async (query) => {
 
   if (params.user_state) {
     const user = await User.findOne({ where: { telegram_id: query.from.id } });
+    if (!user) {
+      await bot.answerCallbackQuery(query.id, {
+        text: `Please /start @${process.env.BOT_USERNAME} first.`,
+        show_alert: true,
+      });
+      return;
+    }
     user.state = params.user_state;
     await user.save();
     if (params.user_state > 0) {
-      // bot.answerCallbackQuery(query.id, {
-      //   url,
-      //   // text: "Tap the button below to describe this content.",
-      // });
+      const res = await MENUS.describe.send({ id: query.from.id });
+      if (!res.ok) {
+        if (res.no_init) {
+          await bot.answerCallbackQuery(query.id, {
+            text: `Please /start @${process.env.BOT_USERNAME} first.`,
+            show_alert: true,
+          });
+          user.state = -1;
+          await user.save();
+          return;
+        } else {
+          await bot.answerCallbackQuery(query.id, "There was an error. /rip");
+          user.state = -1;
+          await user.save();
+          return;
+        }
+      }
     }
   }
 

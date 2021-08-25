@@ -2,7 +2,6 @@ const User = require("../../../db/models/user");
 const { ik, butt } = require("../helpers");
 const bot = require("../bot");
 
-
 // TODO refator this
 
 /**
@@ -26,16 +25,14 @@ class Menu {
       let data;
       // a lot of menus need the user so
       const user = await User.findOne({ where: { telegram_id: from.id } });
-      if (user != null && user.verification_status == -1) {
-        const options = { ...ik([[butt("Ok", "delete=true")]]) };
-        const text = "You've been banned, begone from this place!";
-        data = { options, text };
-      } else {
+      if (user != null || from.ignore_user_id) {
         data = await this.load(
           from,
           { ...options, bot: bot, user: user },
           ...Array.prototype.slice.call(arguments, [3])
         );
+      } else {
+        data = { text: "Please send /start first", options: {} };
       }
       const res = await bot.sendMessage(from.id, data.text, {
         parse_mode: "HTML",
@@ -47,6 +44,13 @@ class Menu {
         process.env.ADMIN_ID,
         `There was an error in the ${this.key} menu:\n${error.stack}`
       );
+      return {
+        ok: false,
+        error,
+        no_init:
+          error.message ==
+          "ETELEGRAM: 403 Forbidden: bot can't initiate conversation with a user",
+      };
     }
   }
 }

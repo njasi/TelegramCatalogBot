@@ -107,17 +107,20 @@ Content.addSticker = async function (message) {
  * Forward specific stuff
  */
 
+// TODO support forwards that have images
 Content.addForward = async function (message) {
+  // setup consts
   const ff = message.forward_from;
   const first = ff.first_name || "";
   const last = ff.last_name ? " " + ff.last_name : "";
   const username = ff.username ? " (@" + ff.username + ")" : "";
   const name = `${first}${last}`;
 
-  await Content.forwardToImage(name, message.text, message.entities);
 
+  // find who is submitting this to the bot
   const user = await User.findOne({ where: { telegram_id: message.from.id } });
 
+  // see if it already exists (rn it checks text and user) later may want only text
   const exists = await Content.findAll({
     where: {
       type: "forward",
@@ -126,12 +129,15 @@ Content.addForward = async function (message) {
     },
   });
 
-  console.log(exists);
-
+  // if it exists return its id so we can send the view button
   if (exists.length > 0) {
     return { exists: exists[0].id };
   }
 
+  // create the image if it exists
+  await Content.forwardToImage(name, message.text, message.entities);
+
+  // create
   const out = await Content.create({
     type: "forward",
     from_id: ff.id,
@@ -143,8 +149,11 @@ Content.addForward = async function (message) {
 };
 
 Content.forwardToImage = async function (name, text, entities) {
+  // parse entities into html tags
   const parsed_text = entities_to_string(text, entities);
+  // text and name into telegram message html
   const html = forward_to_html(parsed_text, name);
+  // convert result png into webp
   const res = await html_to_webp(html);
   return res;
 };

@@ -39,24 +39,9 @@ bot.on(
       const cont = await Content.addForward(message);
       await bot.deleteMessage(response.chat.id, response.message_id);
       if (cont.exists) {
-        await bot.sendMessage(
-          message.chat.id,
-          "<b>This forward has already been cataloged...</b>\n\n View it or add a description to it with the buttons below.",
-          {
-            parse_mode: "HTML",
-            ...ik([
-              [butt("Add Description", `user_state=${cont.exists}`)],
-              [
-                butt(
-                  "View",
-                  null,
-                  (options = {
-                    switch_inline_query_current_chat: `-i ${cont.exists}`,
-                  })
-                ),
-              ],
-            ]),
-          }
+        await MENUS.exists.send(
+          { id: message.chat.id, ignore_user_id: true },
+          { type: "forward", exists: cont.exists }
         );
       } else {
         await cont.display(message.chat.id, (confirm = true));
@@ -79,8 +64,29 @@ bot.on(
 bot.on(
   "message",
   vMid(async (message, meta) => {
-    if (isDm(message) && meta == "text") {
-      // Todo edit
+    const user = await User.findOne({
+      where: { telegram_id: message.from.id },
+    });
+    if (isDm(message) && user.state > 0) {
+      // is a dm adding description
+      if (meta == "text") {
+        // content is text message
+        if (message.text.length > 200) {
+          await MENUS.content_error.send({ ...message.from }, { error: 2 });
+          return;
+        }
+        const cont = await Content.findByPk(user.state);
+        cont.description = { ...cont.description, [user.id]: message.text };
+        user.state = -1;
+        await cont.save();
+        await user.save();
+
+        await MENUS.des_success.send({ ...message.from }, { cont });
+      } else {
+        // content not text message
+        await bot.deleteMessage(message.chat.id, message.message_id);
+        await MENUS.content_error.send({ ...message.from }, { error: 1 });
+      }
     }
   }, (skip_on_command = true))
 );
