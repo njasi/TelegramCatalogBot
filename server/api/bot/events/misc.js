@@ -24,7 +24,7 @@ bot.on("polling_error", (err) => {
     process.env.ADMIN_ID,
     `There was a polling error:\n${err.trace}`
   );
-  console.error(`There was a polling error:\n${error.trace}`);
+  console.error(`There was a polling error:\n${err.trace}`);
 });
 
 /**

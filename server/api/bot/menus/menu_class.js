@@ -38,6 +38,10 @@ class Menu {
         parse_mode: "HTML",
         ...data.options,
       });
+      if (user && !from.ignore_user_id) {
+        user.misc = { ...user.misc, menu_id: res.message_id };
+        await user.save();
+      }
       return res;
     } catch (error) {
       bot.sendMessage(

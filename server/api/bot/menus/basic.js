@@ -17,6 +17,15 @@ const start = new Menu(async () => {
   };
 }, "start");
 
+const cancel = new Menu(async (from, args) => {
+  const text = "Cancel everything you are currently doing?";
+  const options = {
+    ...ik([[butt("Yes", "call=true"), butt("No", "call=false")]]),
+  };
+  return { text, options };
+});
+
 module.exports = {
   start, // the start menu
+  cancel, // cancel everything
 };

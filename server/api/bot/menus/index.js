@@ -58,6 +58,7 @@ async function swapMenu(query, params) {
     });
 
     const message = await menu_type_switch(data);
+
     // TODO deal with the message
   } catch (error) {
     // TODO make more standard error handling
@@ -81,7 +82,6 @@ async function detectAndSwapMenu(query, params, bot) {
   }
   return false;
 }
-
 
 const MENUS = {
   ...require("./content"),

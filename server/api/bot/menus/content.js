@@ -4,20 +4,27 @@ const { Menu } = require("./menu_class");
 
 const describe = new Menu(async (from, args) => {
   const cont = await Content.findByPk(args.user.state);
-  const text = `<b>How would you like to describe this content?</b> \n\nSimply using keywords will work well. \n\nThe currently detected text (not including descriptions added by others) is: \n\n${cont.description.text}`;
+  if (cont == null) {
+    return {
+      text: "It seems that this content no longer exists. /f",
+      options: { ...ik([[butt("Ok", "delete=true")]]) },
+    };
+  }
+  const text = `<b>How would you like to describe this content?</b>\nSimply using keywords will work well. \n\nThe currently detected text (not including descriptions added by others) is: \n\n${cont.description.text}`;
   const options = {
     ...ik([[butt("Cancel", "user_state=-1&delete=true")]]),
+
   };
   return { text, options };
 }, "describe");
 
 const exists = new Menu(async (from, args) => {
   return {
-    text: `<b>This ${args.type} has already been cataloged...</b>\n\n View it or add a description to it with the buttons below.`,
+    text: `<b>This ${args.type} has already been cataloged...</b>\n\nView it or add a description to it with the buttons below.`,
     options: {
       ...ik([
-        [butt("Add Description", `user_state=${args.exists}`)],
         [
+          butt("Add Description", `user_state=${args.exists}`),
           butt(
             "View",
             null,
@@ -26,19 +33,21 @@ const exists = new Menu(async (from, args) => {
             })
           ),
         ],
+        [butt("Close", "delete=true")],
       ]),
+      reply_to_message_id: args.message_id,
     },
   };
 }, "exists");
 
 const content_error = new Menu(async (from, args) => {
   return {
-    text: `<b>There was an error adding your description:</b>\n\n ${
-      error.type == 1
+    text: `<b>There was an error adding your description:</b>\n\n${
+      args.error == 1
         ? "Currently only text descriptions are allowed."
-        : error.type == 2
+        : args.error == 2
         ? "The description was over the 200 char limit"
-        : ""
+        : "Unknown error lol"
     }\n\nIf you would like to cancel or try again with a different description please use the buttons below.`,
     options: {
       ...ik([
@@ -55,7 +64,7 @@ const des_success = new Menu(async (from, args) => {
   return {
     text: `<b>Thank you for adding a description to this ${args.cont.type}!</b>`,
     options: {
-      ...ik([[butt("ok", `delete=true`)]]),
+      ...ik([[butt("Close", `delete=true`)]]),
     },
   };
 }, "des_success");
@@ -63,6 +72,6 @@ const des_success = new Menu(async (from, args) => {
 module.exports = {
   describe, // describe the content
   exists, // content already exists
-  content_error,
-  des_success,
+  content_error, // error with content
+  des_success, // success adding description
 };

@@ -88,9 +88,16 @@ bot.on("callback_query", async (query) => {
         show_alert: true,
       });
       return;
+    } else if (user.state > 0 && params.user_state > 0) {
+      await bot.answerCallbackQuery(query.id, {
+        text: `You are already adding a description to some content. Please cancel that action first. \n\n(/cancel or the cancel button)`,
+        show_alert: true,
+      });
+      return;
     }
     user.state = params.user_state;
     await user.save();
+    console.log("SET USER STATE:\n", params.user_state);
     if (params.user_state > 0) {
       const res = await MENUS.describe.send({ id: query.from.id });
       if (!res.ok) {
@@ -102,8 +109,10 @@ bot.on("callback_query", async (query) => {
           user.state = -1;
           await user.save();
           return;
-        } else {
-          await bot.answerCallbackQuery(query.id, "There was an error. /rip");
+        } else if (res.ok == false) {
+          await bot.answerCallbackQuery(query.id, {
+            text: "There was an error. /rip",
+          });
           user.state = -1;
           await user.save();
           return;
@@ -117,7 +126,7 @@ bot.on("callback_query", async (query) => {
    */
   if (params.call == "true") {
     const user = await User.findOne({ where: { telegram_id: query.from.id } });
-    user.state = "idle";
+    user.state = -1;
     await user.save();
     await bot.answerCallbackQuery(query.id, {
       text: "Your current actions were canceled!",
@@ -125,10 +134,11 @@ bot.on("callback_query", async (query) => {
     });
     await bot.deleteMessage(user.telegram_id, message_id);
   } else if (params.call == "false") {
-    bot.answerCallbackQuery(query.id, {
+    await bot.answerCallbackQuery(query.id, {
       text: "Ok your actions were not canceled.",
       show_alert: true,
     });
+    await bot.deleteMessage(query.from.id, message_id);
   }
 
   // swaps to a new menu if the menu key is in params

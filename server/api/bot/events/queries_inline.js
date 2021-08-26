@@ -24,7 +24,8 @@ buttons = [
 // -p         => show popular content
 // -r         => show recently used content
 // -i n       => show content where id = n
-// -t <type>  => show content of that type
+// -u user    => show content from this user
+// -t type    => show content of that type
 
 bot.on("inline_query", async (inline_query) => {
   // console.log("\nINLINE QUERY \n", inline_query);
