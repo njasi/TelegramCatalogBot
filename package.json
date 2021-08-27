@@ -12,8 +12,8 @@
     "deploy": "webpack git add -A",
     "heroku-prebuild": "npm install --dev",
     "tunnel": "heroku config & heroku ps:exec",
-    "heroku-off": "heroku ps:scale web=0 --app dabney-confessions",
-    "heroku-on": "heroku ps:scale web=1 --app dabney-confessions"
+    "heroku-off": "heroku ps:scale web=0",
+    "heroku-on": "heroku ps:scale web=1"
   },
   "author": "",
   "license": "ISC",
