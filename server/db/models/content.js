@@ -6,6 +6,7 @@ const bot = require("../../api/bot/bot");
 const { butt, ik } = require("../../api/bot/helpers");
 const User = require("./user");
 const util = require("util");
+const fs = require("fs");
 
 const Content = db.define("content", {
   /**
@@ -66,11 +67,15 @@ Content.prototype.display = async function (chat_id, confirm = false) {
   try {
     switch (this.type) {
       case "sticker": {
+        await bot.sendSticker(chat_id, this.file_id, {
+          ...buttons,
+        });
+        return;
       }
       case "forward": {
-        let message = await bot.sendDocument(
+        let message = await bot.sendSticker(
           chat_id,
-          confirm ? "./temp/temp.webp" : this.file_id,
+          confirm ? fs.createReadStream("./temp/temp.webp") : this.file_id,
           {
             ...buttons,
           }
@@ -98,7 +103,17 @@ Content.prototype.to_inline_button = function () {
   switch (this.type) {
     case "sticker":
     case "forward": {
-      return { type: "sticker", id: this.id, sticker_file_id: this.file_id };
+      return {
+        type: "document",
+        id: this.id,
+        document_url: this.file_id,
+        thumb_url: this.file_id,
+        title: this.description.text,
+        description: `${
+          this.type[0].toUpperCase() + this.type.substr(1)
+        } from ${this.description.name.split("(")[0]}`,
+        mime_type: "application/pdf",
+      };
     }
     default: {
       // console.log("Default");
@@ -109,7 +124,6 @@ Content.prototype.to_inline_button = function () {
 /**
  * Sticker specific stuff
  */
-
 Content.addSticker = async function (message) {
   console.log(message);
   // await Content.findAll({where:{file_id:message.sticker}})

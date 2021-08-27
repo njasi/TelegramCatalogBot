@@ -47,9 +47,7 @@ bot.on("inline_query", async (inline_query) => {
   };
   v_status = await verifyUser(inline_query.from.id);
 
-  console.log("\nINLINE QUERY:\n", inline_query.query);
   if (!v_status) {
-    console.log("Not verified");
     buttons = [];
     options.switch_pm_text = "Please Verify First";
     options.switch_pm_parameter = "verify";
@@ -58,9 +56,9 @@ bot.on("inline_query", async (inline_query) => {
     query_options = await create_query(inline_query.query);
     const content = await Content.findAll(query_options);
     buttons = content.map((c) => c.to_inline_button());
-    console.log("\nBUTTONS:\n", buttons);
   }
 
   console.log("\nOPTIONS\n",options);
+  
   await bot.answerInlineQuery(inline_query.id, buttons, options);
 });

@@ -17,7 +17,10 @@ const commandRegexDict = {
  */
 function command(name, extra = []) {
   let insert = extra.length == 0 ? name : `(${[name, ...extra].join("|")})`;
-  let reg = new RegExp(`^\/${insert}($|@${process.env.BOT_USERNAME}$)`);
+  let reg = new RegExp(
+    `^\/${insert}(|@${process.env.BOT_USERNAME})($| [^ ]*$)`
+  );
+  console.log(reg)
   return reg;
 }
 
