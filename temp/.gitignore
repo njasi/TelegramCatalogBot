@@ -2,3 +2,5 @@
 *
 # Except this file
 !.gitignore
+
+# i need the temp folder to save images in...

@@ -4,6 +4,8 @@ const prompt = require("prompt");
  * only need to run this on heroku or special test cases to get the database url...
  *
  * normally you should just run the seed file (npm run seed) (or node script/seed/seed)
+ *
+ * this is a mess... thrown together quickly to test something
  */
 
 if (module === require.main) {
