@@ -58,7 +58,5 @@ bot.on("inline_query", async (inline_query) => {
     buttons = content.map((c) => c.to_inline_button());
   }
 
-  console.log("\nOPTIONS\n",options);
-  
   await bot.answerInlineQuery(inline_query.id, buttons, options);
 });

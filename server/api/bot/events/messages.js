@@ -56,10 +56,34 @@ bot.on(
 
 // TODO: detect stickers sent to the find stickers chat
 bot.on(
-  "message",
+  "sticker",
   vMid(async (message, meta) => {
-    if (`${message.chat.id}` == process.env.LOOKING_FOR_STICKER_CHAT_ID) {
-      Content.addSticker(message);
+    if (
+      `${message.chat.id}` == process.env.LOOKING_FOR_STICKER_CHAT_ID ||
+      (isDm(message) &&
+        !message.via_bot &&
+        message.via_bot.username == process.env.BOT_USERNAME)
+    ) {
+      const response = await bot.sendMessage(
+        message.chat.id,
+        `<b>Parsing Sticker...</b>`,
+        { parse_mode: "HTML" }
+      );
+
+      const cont = await Content.addSticker(message);
+      await bot.deleteMessage(response.chat.id, response.message_id);
+      if (cont.exists) {
+        await MENUS.exists.send(
+          { id: message.chat.id, ignore_user_id: true },
+          {
+            type: "sticker",
+            exists: cont.exists,
+            message_id: message.message_id,
+          }
+        );
+      } else {
+        await cont.display(message.chat.id, (confirm = true));
+      }
     }
   }, (skip_on_command = true))
 );

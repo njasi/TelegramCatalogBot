@@ -5,8 +5,13 @@ const webp = require("webp-converter");
 const bot = require("../../api/bot/bot");
 const { butt, ik } = require("../../api/bot/helpers");
 const User = require("./user");
-const util = require("util");
 const fs = require("fs");
+const tesseract = require("node-tesseract-ocr");
+const config = {
+  lang: "eng",
+  oem: 1,
+  psm: 3,
+};
 
 const Content = db.define("content", {
   /**
@@ -38,6 +43,9 @@ const Content = db.define("content", {
   file_id: {
     type: Sequelize.STRING,
   },
+  file_unique_id: {
+    type: Sequelize.STRING,
+  },
   /**
    * how many times the content has been sent
    */
@@ -67,15 +75,17 @@ Content.prototype.display = async function (chat_id, confirm = false) {
   try {
     switch (this.type) {
       case "sticker": {
-        await bot.sendSticker(chat_id, this.file_id, {
-          ...buttons,
-        });
+        await bot.sendSticker(chat_id, this.file_id);
+        await bot.sendMessage(chat_id, "testing" + this.description.text);
+        
         return;
       }
       case "forward": {
         let message = await bot.sendSticker(
           chat_id,
-          confirm ? fs.createReadStream("./temp/temp.webp") : this.file_id,
+          confirm
+            ? fs.createReadStream(`./temp/temp${this.id}.webp`)
+            : this.file_id,
           {
             ...buttons,
           }
@@ -120,13 +130,60 @@ Content.prototype.to_inline_button = function () {
     }
   }
 };
-
+// TODO: mash add sticker and add forward together
 /**
  * Sticker specific stuff
  */
 Content.addSticker = async function (message) {
-  console.log(message);
-  // await Content.findAll({where:{file_id:message.sticker}})
+  // TODO: use the createstickerset method to make an archive of stickers so they can never be deleted
+  // find who is submitting this to the bot
+  const user = await User.findOne({ where: { telegram_id: message.from.id } });
+  const exists = await Content.findAll({
+    where: { file_unique_id: message.sticker.file_unique_id },
+  });
+
+  // if it exists return its id so we can send the view button
+  if (exists.length > 0) {
+    return { exists: exists[0].id };
+  }
+
+  // grab the file url
+  let file_url = await bot.getFile(message.sticker.file_id);
+  file_url = `https://api.telegram.org/file/bot${process.env.BOT_TOKEN}/${file_url.file_path}`;
+
+  // OCR on any text that may exist
+  let text;
+  try {
+    text = await new Promise((res, rej) => {
+      tesseract
+        .recognize(file_url, config)
+        .then((text) => {
+          res(text.replace(/\s/g, " "));
+        })
+        .catch((error) => {
+          rej(error);
+        });
+    });
+  } catch (error) {
+    // TODO: failed ocr message
+  }
+
+  // // Create it
+
+  const out = await Content.create({
+    type: "sticker",
+    from_id: null,
+    file_id: message.sticker.file_id,
+    file_unique_id: message.sticker.file_unique_id,
+    description: {
+      user: [message.sticker.emoji], // make first index the emoji so it exists somewhere parseable
+      text,
+      name: `${message.sticker.set_name}`,
+    },
+    userId: user.id,
+  });
+
+  return out;
 };
 
 /**
@@ -142,9 +199,6 @@ Content.addForward = async function (message) {
   const username = ff.username ? " (@" + ff.username + ")" : "";
   const name = `${first}${last}`;
 
-  // find who is submitting this to the bot
-  const user = await User.findOne({ where: { telegram_id: message.from.id } });
-
   // see if it already exists (rn it checks text and user) later may want only text
   const exists = await Content.findAll({
     where: {
@@ -159,8 +213,8 @@ Content.addForward = async function (message) {
     return { exists: exists[0].id };
   }
 
-  // create the image if it exists
-  await Content.forwardToImage(name, message.text, message.entities);
+  // find who is submitting this to the bot
+  const user = await User.findOne({ where: { telegram_id: message.from.id } });
 
   // create
   const out = await Content.create({
@@ -170,16 +224,19 @@ Content.addForward = async function (message) {
     userId: user.id,
   });
 
+  // create the image if it exists
+  await Content.forwardToImage(name, message.text, message.entities, out.id);
+
   return out;
 };
 
-Content.forwardToImage = async function (name, text, entities) {
+Content.forwardToImage = async function (name, text, entities, id) {
   // parse entities into html tags
   const parsed_text = entities_to_string(text, entities);
   // text and name into telegram message html
   const html = forward_to_html(parsed_text, name);
   // convert result png into webp
-  const res = await html_to_webp(html);
+  const res = await html_to_webp(html, id);
   return res;
 };
 
@@ -200,7 +257,7 @@ function entities_to_string(text, entities) {
     pre: (a) => (a ? "<" : "</") + "code>",
     bot_command: (a) => (a ? `<span style="color:#8774e1">` : "</span>"),
   };
-  let pre_off = -1;
+
   const tags = []; // offset:{start,end,offset,length}
   let ofs = 0;
   for (let i = 0; i < entities.length; i++) {
@@ -325,7 +382,7 @@ function forward_to_html(text, name) {
 </html>`;
 }
 
-async function html_to_png(html) {
+async function html_to_png(html, id) {
   // setup browser
   const browser = await puppeteer.launch({
     headless: true,
@@ -365,7 +422,7 @@ async function html_to_png(html) {
 
   // debug screenshot for debugging
   await page.screenshot({
-    path: "./temp/temp.png",
+    path: `./temp/temp${id}.png`,
     type: "png",
     omitBackground: true,
     clip: {
@@ -379,12 +436,12 @@ async function html_to_png(html) {
   await browser.close();
 }
 
-async function html_to_webp(html) {
-  await html_to_png(html);
+async function html_to_webp(html, id) {
+  await html_to_png(html, id);
 
   const result = await webp.cwebp(
-    "./temp/temp.png",
-    "./temp/temp.webp",
+    `./temp/temp${id}.png`,
+    `./temp/temp${id}.webp`,
     "-q 100"
   );
   return result;

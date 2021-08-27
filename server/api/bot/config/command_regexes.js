@@ -20,7 +20,6 @@ function command(name, extra = []) {
   let reg = new RegExp(
     `^\/${insert}(|@${process.env.BOT_USERNAME})($| [^ ]*$)`
   );
-  console.log(reg)
   return reg;
 }
 
