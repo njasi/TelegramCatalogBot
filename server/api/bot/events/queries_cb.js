@@ -97,7 +97,6 @@ bot.on("callback_query", async (query) => {
     }
     user.state = params.user_state;
     await user.save();
-    console.log("SET USER STATE:\n", params.user_state);
     if (params.user_state > 0) {
       const res = await MENUS.describe.send({ id: query.from.id });
       if (!res.ok) {

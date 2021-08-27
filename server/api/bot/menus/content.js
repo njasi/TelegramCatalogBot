@@ -13,7 +13,6 @@ const describe = new Menu(async (from, args) => {
   const text = `<b>How would you like to describe this content?</b>\nSimply using keywords will work well. \n\nThe currently detected text (not including descriptions added by others) is: \n\n${cont.description.text}`;
   const options = {
     ...ik([[butt("Cancel", "user_state=-1&delete=true")]]),
-
   };
   return { text, options };
 }, "describe");
@@ -47,6 +46,8 @@ const content_error = new Menu(async (from, args) => {
         ? "Currently only text descriptions are allowed."
         : args.error == 2
         ? "The description was over the 200 char limit"
+        : args.error == 3
+        ? "The content no longer exists somehow... Please use the cancel button below."
         : "Unknown error lol"
     }\n\nIf you would like to cancel or try again with a different description please use the buttons below.`,
     options: {

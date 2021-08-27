@@ -28,7 +28,7 @@ const Content = db.define("content", {
    */
   description: {
     type: Sequelize.JSON,
-    defaultValue: {},
+    defaultValue: { users: [] },
     allowNull: false,
   },
   /**
@@ -94,6 +94,18 @@ Content.prototype.display = async function (chat_id, confirm = false) {
   }
 };
 
+Content.prototype.to_inline_button = function () {
+  switch (this.type) {
+    case "sticker":
+    case "forward": {
+      return { type: "sticker", id: this.id, sticker_file_id: this.file_id };
+    }
+    default: {
+      // console.log("Default");
+    }
+  }
+};
+
 /**
  * Sticker specific stuff
  */
@@ -115,7 +127,6 @@ Content.addForward = async function (message) {
   const last = ff.last_name ? " " + ff.last_name : "";
   const username = ff.username ? " (@" + ff.username + ")" : "";
   const name = `${first}${last}`;
-
 
   // find who is submitting this to the bot
   const user = await User.findOne({ where: { telegram_id: message.from.id } });
@@ -141,7 +152,7 @@ Content.addForward = async function (message) {
   const out = await Content.create({
     type: "forward",
     from_id: ff.id,
-    description: { text: message.text, name: `${name}${username}` },
+    description: { user: [], text: message.text, name: `${name}${username}` },
     userId: user.id,
   });
 

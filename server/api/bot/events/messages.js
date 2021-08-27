@@ -38,8 +38,6 @@ bot.on(
 
       const cont = await Content.addForward(message);
       await bot.deleteMessage(response.chat.id, response.message_id);
-      console.log(message.message_id);
-      console.log(response.message_id);
       if (cont.exists) {
         await MENUS.exists.send(
           { id: message.chat.id, ignore_user_id: true },
@@ -66,7 +64,7 @@ bot.on(
   }, (skip_on_command = true))
 );
 
-// TODO: detect editing description
+// TODO: on error reset user state
 bot.on(
   "message",
   vMid(async (message, meta) => {
@@ -85,13 +83,21 @@ bot.on(
           return;
         }
         const cont = await Content.findByPk(user.state);
-        cont.description = { ...cont.description, [user.id]: message.text };
+        // i could do this easily with another sql table UserContent or whatever but
+        // i have limited rows in heroku so here is the jank lol
+        if (!cont) {
+          // somehow it's gone
+          await MENUS.content_error.send({ ...message.from }, { error: 3 });
+          return;
+        }
+        cont.description = {
+          ...cont.description,
+          user: [...cont.description.user, message.text],
+        };
         user.state = -1;
         await cont.save();
         await user.save();
 
-        console.log(user.misc, user.id);
-        console.log(message.chat.id, user.misc.menu_id);
         await bot.deleteMessage(message.chat.id, user.misc.menu_id);
         await MENUS.des_success.send({ ...message.from }, { cont });
       } else {
