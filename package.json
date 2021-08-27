@@ -1,7 +1,7 @@
 {
-  "name": "nodeconfessions",
+  "name": "DabneyCatalogBot",
   "version": "1.0.0",
-  "description": "confessions bot node version",
+  "description": "catalog and recall stickers/forwards",
   "main": "index.js",
   "scripts": {
     "start": "node server",

@@ -45,13 +45,16 @@ async function verifyUser(telegram_id) {
       ? " " + telegram_user.user.last_name
       : "";
     const name = `${first}${last}`;
+    console.log(name)
     try {
       user = await User.findOrCreate({
         where: { telegram_id: telegram_id },
       });
       user[0].misc = { ...user[0].misc, name: name };
       await user[0].save();
-    } catch (error) {} // stupid .on does things at the exact same time even tho functions are async
+    } catch (error) {
+      console.log(error)
+    } // stupid .on does things at the exact same time even tho functions are async
     return { telegram_user, user: user[0] };
   } else {
     return null;
