@@ -74,8 +74,8 @@ const Content = db.define("content", {
  * is just a project for fun and my personal use so
  */
 Content.startup = async function () {
-  const to_parse = Content.findAll({
-    where: { type: "forward", file_id: undefined },
+  const to_parse = await Content.findAll({
+    where: { type: "forward", file_id: null },
   });
   console.log(`Found ${to_parse.length} forwards to try parsing`);
   for (let i = 0; i < to_parse.length; i++) {

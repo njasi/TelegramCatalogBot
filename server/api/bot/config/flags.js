@@ -136,6 +136,12 @@ async function create_query(query) {
     options.where[Op.or].push(...results[0]);
   }
 
+  if (!options.where[Op.and]) {
+    options.where[Op.and] = [];
+  }
+  // extra to ensure that things without a file id are not sent
+  options.where[Op.and].push({ [Op.not]: { file_id: null } });
+
   return options;
 }
 
