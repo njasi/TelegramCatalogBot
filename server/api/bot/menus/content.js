@@ -28,7 +28,6 @@ const describe = new Menu(async (from, args) => {
   const options = {
     ...ik([[butt("Cancel", "user_state=0&delete=true")]]),
   };
-  console.log(text, options, args.id);
   return { text, options };
 }, "describe");
 
