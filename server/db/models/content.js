@@ -65,6 +65,32 @@ const Content = db.define("content", {
   },
 });
 
+/**
+ * quick fix to the issue of crashing when too many forwards are recieved at once
+ *
+ * will run on startup to ensure all of the forwards have a file_id
+ *
+ * in the future ill make this work properly with a job queue structure but this
+ * is just a project for fun and my personal use so
+ */
+Content.startup = async function () {
+  const to_parse = Content.findAll({
+    where: { type: "forward", file_id: undefined },
+  });
+  console.log(`Found ${to_parse.length} forwards to try parsing`);
+  for (let i = 0; i < to_parse.length; i++) {
+    const cur = to_parse[i];
+    const user = await User.findByPk(cur.userId);
+    await Content.forwardToImage(
+      cur.description,
+      cur.description.text,
+      cur.description.entities,
+      cur.id
+    );
+    await cur.display(user.telegram_id, (confirm = true));
+  }
+};
+
 Content.prototype.display = async function (
   chat_id,
   confirm = false,
@@ -253,7 +279,12 @@ Content.addForward = async function (message) {
   const out = await Content.create({
     type: "forward",
     from_id: ff.id,
-    description: { user: [], text: message.text, name: `${name}${username}` },
+    description: {
+      user: [],
+      text: message.text,
+      entities: message.entities,
+      name: `${name}${username}`,
+    },
     userId: user.id,
   });
 

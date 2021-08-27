@@ -15,6 +15,7 @@ const morgan = require("morgan");
 const compression = require("compression");
 
 const db = require("./db");
+const { Content } = require("./db/models");
 const PORT = process.env.PORT || 8080;
 const app = express();
 
@@ -82,6 +83,7 @@ async function bootApp() {
   // await db.sync({ force: true });
   await syncDb();
   await createApp();
+  await Content.startup();
   await startListening();
 }
 
