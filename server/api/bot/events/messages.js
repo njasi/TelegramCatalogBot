@@ -33,12 +33,14 @@ bot.on(
       const response = await bot.sendMessage(
         message.chat.id,
         `<b>Parsing Forward...</b>`,
-        { parse_mode: "HTML" }
+        { parse_mode: "HTML", reply_to_message_id: message.message_id }
       );
 
       const cont = await Content.addForward(message);
-      await bot.deleteMessage(response.chat.id, response.message_id);
+
       if (cont.exists) {
+        await bot.deleteMessage(response.chat.id, response.message_id);
+
         await MENUS.exists.send(
           { id: message.chat.id, ignore_user_id: true },
           {
@@ -47,7 +49,13 @@ bot.on(
             message_id: message.message_id,
           }
         );
+      } else if (cont.error) {
+        const response = await bot.editMessageText(
+          `<b>Parsing Forward...</b>`,
+          { chat_id: response.chat.id, message_id: response.message_id }
+        );
       } else {
+        await bot.deleteMessage(response.chat.id, response.message_id);
         await cont.display(message.chat.id, (confirm = true));
       }
     }

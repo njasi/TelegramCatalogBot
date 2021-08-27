@@ -43,6 +43,9 @@ const Content = db.define("content", {
   file_id: {
     type: Sequelize.STRING,
   },
+  /**
+   * file_unique_id of the content if its a sticker or a forward
+   */
   file_unique_id: {
     type: Sequelize.STRING,
   },
@@ -255,7 +258,36 @@ Content.addForward = async function (message) {
   });
 
   // create the image if it exists
-  await Content.forwardToImage(name, message.text, message.entities, out.id);
+  const create_image = async (tries = 0) => {
+    try {
+      await Content.forwardToImage(
+        name,
+        message.text,
+        message.entities,
+        out.id
+      );
+    } catch (error) {
+      console.log("\nERROR:\n", error.message);
+      if (
+        error.message.indexOf("MaxListenersExceededWarning") !== 0 &&
+        tries < 10
+      ) {
+        await new Promise((res, rej) => setTimeout(() => res(), 5000));
+        await create_image((tries = tries + 1));
+      } else {
+        // remove forward for now and tell the user to try again later
+        await out.destroy();
+        bot.sendMessage(
+          process.env.ADMIN_ID,
+          `There was an error rendering a forward:\n${error}`
+        );
+
+        return { error: error.message };
+      }
+    }
+  };
+
+  await create_image();
 
   return out;
 };
