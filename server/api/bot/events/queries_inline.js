@@ -58,3 +58,9 @@ bot.on("inline_query", async (inline_query) => {
 
   await bot.answerInlineQuery(inline_query.id, buttons, options);
 });
+
+bot.on("chosen_inline_result", async (result) => {
+  const cont = await Content.findByPk(result.result_id);
+  cont.uses++;
+  cont.save();
+});
