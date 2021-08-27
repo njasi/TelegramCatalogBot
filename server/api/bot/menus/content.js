@@ -17,7 +17,7 @@ const describe = new Menu(async (from, args) => {
       ? `<b>How would you like to describe this content?</b>\nSimply using keywords will work well.`
       : `<b>What text is in this image?</b>\nIf there is no text please give it a sutable title.`
   }\n\n${
-    cont.description.text.trim().length > 0
+    cont.description.text.trim().length < 0
       ? "It seems that OCR did not detect any text..."
       : `The current ${
           cont.type == "sticker" ? "title" : "text"
