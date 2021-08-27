@@ -191,9 +191,10 @@ Content.addSticker = async function (message) {
     });
   } catch (error) {
     // TODO: failed ocr message
+    console.log(error.stack);
     bot.sendMessage(
       process.env.ADMIN_ID,
-      `There was an error running ocr:\n${erroc.stack}`
+      `There was an error running ocr:\n${error.stack}`
     );
   }
 
