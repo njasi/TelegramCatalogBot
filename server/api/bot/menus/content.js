@@ -76,7 +76,7 @@ const cataloged = new Menu(async (from, args) => {
   return {
     text: `<b>Your Content Was Cataloged!</b>\n\n${
       args.cont.type == "sticker"
-        ? args.cont.description.text.trim.length == 0
+        ? args.cont.description.text.trim().length == 0
           ? "No text was detected in this sticker. Please select edit OCR to give it a title.\n\n"
           : `The following text was detected with OCR:\n${args.cont.description.text}\n\n`
         : ""
