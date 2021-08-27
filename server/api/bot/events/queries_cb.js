@@ -54,22 +54,9 @@ bot.on("callback_query", async (query) => {
         message_id,
       }
     );
-    bot.sendMessage(
-      chat_id,
-      `<b>Your Content Was Cataloged!</b>\n\nYou can add a description to it using the button below).`,
-      {
-        parse_mode: "HTML",
-        reply_markup: {
-          inline_keyboard: [
-            [
-              {
-                text: "Add Description",
-                callback_data: `user_state=${cont.id}`,
-              },
-            ],
-          ],
-        },
-      }
+    await MENUS.cataloged.send(
+      { id: query.message.chat.id },
+      { ignore_user_id: true, cont }
     );
   }
 
@@ -105,14 +92,14 @@ bot.on("callback_query", async (query) => {
             text: `Please /start @${process.env.BOT_USERNAME} first.`,
             show_alert: true,
           });
-          user.state = -1;
+          user.state = 0;
           await user.save();
           return;
         } else if (res.ok == false) {
           await bot.answerCallbackQuery(query.id, {
             text: "There was an error. /rip",
           });
-          user.state = -1;
+          user.state = 0;
           await user.save();
           return;
         }
@@ -125,7 +112,7 @@ bot.on("callback_query", async (query) => {
    */
   if (params.call == "true") {
     const user = await User.findOne({ where: { telegram_id: query.from.id } });
-    user.state = -1;
+    user.state = 0;
     await user.save();
     await bot.answerCallbackQuery(query.id, {
       text: "Your current actions were canceled!",

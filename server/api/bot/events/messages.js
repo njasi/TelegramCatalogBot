@@ -59,10 +59,9 @@ bot.on(
   "sticker",
   vMid(async (message, meta) => {
     if (
-      `${message.chat.id}` == process.env.LOOKING_FOR_STICKER_CHAT_ID ||
-      (isDm(message) &&
-        !message.via_bot &&
-        message.via_bot.username == process.env.BOT_USERNAME)
+      (`${message.chat.id}` == process.env.LOOKING_FOR_STICKER_CHAT_ID ||
+        isDm(message)) &&
+      !(message.via_bot && message.via_bot.username == process.env.BOT_USERNAME)
     ) {
       const response = await bot.sendMessage(
         message.chat.id,
@@ -89,6 +88,7 @@ bot.on(
 );
 
 // TODO: on error reset user state
+// TODO: edit ocr
 bot.on(
   "message",
   vMid(async (message, meta) => {
@@ -118,7 +118,7 @@ bot.on(
           ...cont.description,
           user: [...cont.description.user, message.text],
         };
-        user.state = -1;
+        user.state = 0;
         await cont.save();
         await user.save();
 

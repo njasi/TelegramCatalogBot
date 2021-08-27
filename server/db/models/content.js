@@ -62,22 +62,31 @@ const Content = db.define("content", {
   },
 });
 
-Content.prototype.display = async function (chat_id, confirm = false) {
+Content.prototype.display = async function (
+  chat_id,
+  confirm = false,
+  options = {}
+) {
   const buttons = confirm
     ? ik([
         [
-          butt("Confirm", `sdesc=${this.id}`),
+          butt("Catalog", `sdesc=${this.id}`),
           butt("Cancel", `delete=true&remove=${this.id}`),
         ],
       ])
-    : ik([[butt("Add Description", `user_state=${this.id}`)]]);
+    : ik([
+        [butt(`Add Description`, `user_state=${this.id}`)],
+        ...(this.type == "sticker"
+          ? [[butt("Edit OCR", `user_state=${this.id * -1}`)]]
+          : [[]]),
+      ]);
 
   try {
     switch (this.type) {
       case "sticker": {
-        await bot.sendSticker(chat_id, this.file_id);
-        await bot.sendMessage(chat_id, "testing" + this.description.text);
-        
+        const res = await bot.sendSticker(chat_id, this.file_id, {
+          ...buttons,
+        });
         return;
       }
       case "forward": {
@@ -91,8 +100,24 @@ Content.prototype.display = async function (chat_id, confirm = false) {
           }
         );
 
+        // unlink temp images
+        await Promise.all(
+          new Promise((res, rej) => {
+            fs.unlink(`./temp/temp${this.id}.webp`)
+              .then(() => res())
+              .catch((err) => rej(err));
+          }),
+          new Promise((res, rej) => {
+            fs.unlink(`./temp/temp${this.id}.png`)
+              .then(() => res())
+              .catch((err) => rej(err));
+          })
+        );
+
+        // save the file_ids since its the first time sending it
         if (confirm) {
           this.file_id = message.sticker.file_id;
+          this.file_unique_id = message.sticker.file_unique_id;
           await this.save();
         }
         return;

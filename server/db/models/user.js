@@ -10,7 +10,9 @@ const User = db.define("user", {
     unique: true,
   },
   /**
-   * -1 state = not editing description
+   * messy but there's no reason to make it complicated
+   * n < 0 state => editing escription of content {where content.id = -1*n}
+   * 0 state = not editing description
    * n > 0 state => editing description of content {where content.id = n}
    */
   state: {
