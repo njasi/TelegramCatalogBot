@@ -229,6 +229,8 @@ Content.addSticker = async function (message) {
 
   // // Create it
 
+  const sticker_set = await bot.getStickerSet(message.sticker.set_name);
+
   const out = await Content.create({
     type: "sticker",
     from_id: null,
@@ -237,7 +239,7 @@ Content.addSticker = async function (message) {
     description: {
       user: [message.sticker.emoji], // make first index the emoji so it exists somewhere parseable
       text,
-      name: `${message.sticker.set_name}`,
+      name: `${sticker_set.title}`,
     },
     userId: user.id,
   });
