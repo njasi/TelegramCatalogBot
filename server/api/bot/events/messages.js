@@ -96,38 +96,52 @@ bot.on(
       const user = await User.findOne({
         where: { telegram_id: message.from.id },
       });
-      if (user.state <= 0) {
+      if (user.state == 0) {
         return;
       }
       // is a dm adding description
       if (meta.type == "text") {
-        // content is text message
         if (message.text.length > 200) {
-          await MENUS.content_error.send({ ...message.from }, { error: 2 });
+          await MENUS.content_error.send(
+            { ...message.from },
+            { id: user.state, error: 2 }
+          );
           return;
         }
-        const cont = await Content.findByPk(user.state);
-        // i could do this easily with another sql table UserContent or whatever but
-        // i have limited rows in heroku so here is the jank lol
+        const cont = await Content.findByPk(Math.abs(user.state));
         if (!cont) {
           // somehow it's gone
-          await MENUS.content_error.send({ ...message.from }, { error: 3 });
+          await MENUS.content_error.send(
+            { ...message.from },
+            { id: user.state, error: 3 }
+          );
           return;
         }
-        cont.description = {
-          ...cont.description,
-          user: [...cont.description.user, message.text],
-        };
+        if (user.state > 0) {
+          // content is text message
+          // i could do this easily with another sql table UserContent or whatever but
+          // i have limited rows in heroku so here is the jank lol
+          cont.description = {
+            ...cont.description,
+            user: [...cont.description.user, message.text],
+          };
+        } else {
+          cont.description = { ...cont.description, text: message.text };
+        }
         user.state = 0;
-        await cont.save();
-        await user.save();
-
-        await bot.deleteMessage(message.chat.id, user.misc.menu_id);
-        await MENUS.des_success.send({ ...message.from }, { cont });
+        await Promise.all([
+          cont.save(),
+          user.save(),
+          bot.deleteMessage(message.chat.id, user.misc.menu_id),
+          MENUS.des_success.send({ ...message.from }, { cont }),
+        ]);
       } else {
         // content not text message
         await bot.deleteMessage(message.chat.id, message.message_id);
-        await MENUS.content_error.send({ ...message.from }, { error: 1 });
+        await MENUS.content_error.send(
+          { ...message.from },
+          { id: user.state, error: 1 }
+        );
       }
     }
   }, (skip_on_command = true))

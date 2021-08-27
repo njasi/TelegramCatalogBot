@@ -69,9 +69,9 @@ const startListening = () => {
   );
 };
 
-const syncDb = () =>
+const syncDb = (force = false) =>
   db
-    .sync()
+    .sync({ force })
     .then(function () {})
     .catch(function (err) {
       console.log("Error:", err);

@@ -75,17 +75,24 @@ bot.on("callback_query", async (query) => {
         show_alert: true,
       });
       return;
-    } else if (user.state > 0 && params.user_state > 0) {
+    } else if (user.state !== 0 && parseInt(params.user_state) !== 0) {
       await bot.answerCallbackQuery(query.id, {
-        text: `You are already adding a description to some content. Please cancel that action first. \n\n(/cancel or the cancel button)`,
+        text:
+          user.state == params.user_state
+            ? "You appear to already be editing this content. Just sent the text you want!"
+            : `You are already editing some content's description/ocr. Please cancel that action first. \n\n(/cancel or the cancel button)`,
         show_alert: true,
       });
       return;
     }
     user.state = params.user_state;
     await user.save();
-    if (params.user_state > 0) {
-      const res = await MENUS.describe.send({ id: query.from.id });
+    // 0 indicates idle
+    if (params.user_state != 0) {
+      const res = await MENUS.describe.send(
+        { id: query.from.id },
+        { id: params.user_state }
+      );
       if (!res.ok) {
         if (res.no_init) {
           await bot.answerCallbackQuery(query.id, {

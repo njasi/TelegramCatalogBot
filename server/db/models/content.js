@@ -101,18 +101,18 @@ Content.prototype.display = async function (
         );
 
         // unlink temp images
-        await Promise.all(
+        await Promise.all([
           new Promise((res, rej) => {
-            fs.unlink(`./temp/temp${this.id}.webp`)
-              .then(() => res())
-              .catch((err) => rej(err));
+            fs.unlink(`./temp/temp${this.id}.webp`, (err) => {
+              res(); // dont really care about errors since itll be on herokus system and cleared on its own
+            });
           }),
           new Promise((res, rej) => {
-            fs.unlink(`./temp/temp${this.id}.png`)
-              .then(() => res())
-              .catch((err) => rej(err));
-          })
-        );
+            fs.unlink(`./temp/temp${this.id}.png`, (err) => {
+              res();
+            });
+          }),
+        ]);
 
         // save the file_ids since its the first time sending it
         if (confirm) {

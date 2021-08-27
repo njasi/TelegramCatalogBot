@@ -4,7 +4,7 @@ const { Menu } = require("./menu_class");
 
 const start = new Menu(async () => {
   return {
-    text: "Boi",
+    text: "lol i havent started on this menu yet, pls wait a bit.",
     options: {
       ...ik([
         [

@@ -67,6 +67,14 @@ async function swapMenu(query, params) {
       `There was an error swapping into the ${params.menu} menu:`
     );
     bot.sendMessage(process.env.ADMIN_ID, `${error.stack}`); // seperate messages in case the stack is so long that it stops the warning.
+    try {
+      bot.answerCallbackQuery(query.id, {
+        text: "This menu seems to not exist... Perhaps if you wait it will exist later.",
+        show_alert: true,
+      });
+    } catch (error) {
+      // theres a good chance that the query is fake so
+    }
   }
 }
 

@@ -17,7 +17,7 @@ const User = db.define("user", {
    */
   state: {
     type: Sequelize.INTEGER,
-    defaultValue: -1,
+    defaultValue: 0,
     allowNull: false,
   },
   /**

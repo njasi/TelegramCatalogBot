@@ -3,17 +3,32 @@ const { butt, ik } = require("../helpers");
 const { Menu } = require("./menu_class");
 
 const describe = new Menu(async (from, args) => {
-  const cont = await Content.findByPk(args.user.state);
+  const cont = await Content.findByPk(
+    (args.user.state < 0 ? -1 : 1) * args.user.state
+  );
   if (cont == null) {
     return {
       text: "It seems that this content no longer exists. /f",
       options: { ...ik([[butt("Ok", "delete=true")]]) },
     };
   }
-  const text = `<b>How would you like to describe this content?</b>\nSimply using keywords will work well. \n\nThe currently detected text (not including descriptions added by others) is: \n\n${cont.description.text}`;
+  const text = `${
+    args.id > 0
+      ? `<b>How would you like to describe this content?</b>\nSimply using keywords will work well.`
+      : `<b>What text is in this image?</b>\nIf there is no text please give it a sutable title.`
+  }\n\n${
+    cont.description.text.trim().length > 0
+      ? "It seems that OCR did not detect any text..."
+      : `The current ${
+          cont.type == "sticker" ? "title" : "text"
+        } (not including descriptions added by others) is: \n\n${
+          cont.description.text
+        }`
+  }`;
   const options = {
     ...ik([[butt("Cancel", "user_state=0&delete=true")]]),
   };
+  console.log(text, options, args.id);
   return { text, options };
 }, "describe");
 
@@ -32,7 +47,12 @@ const exists = new Menu(async (from, args) => {
             })
           ),
         ],
-        [butt("Close", "delete=true")],
+        [
+          ...(args.type == "sticker"
+            ? [butt("Edit OCR", `user_state=${-1 * args.exists}`)]
+            : []),
+          butt("Close", "delete=true"),
+        ],
       ]),
       reply_to_message_id: args.message_id,
     },
@@ -40,16 +60,17 @@ const exists = new Menu(async (from, args) => {
 }, "exists");
 
 const content_error = new Menu(async (from, args) => {
+  const type = args.id > 0 ? "description" : "title";
   return {
-    text: `<b>There was an error adding your description:</b>\n\n${
+    text: `<b>There was an error adding your ${type}:</b>\n\n${
       args.error == 1
-        ? "Currently only text descriptions are allowed."
+        ? `Currently only text ${type}s are allowed.`
         : args.error == 2
-        ? "The description was over the 200 char limit"
+        ? `The ${type} was over the 200 char limit`
         : args.error == 3
         ? "The content no longer exists somehow... Please use the cancel button below."
         : "Unknown error lol"
-    }\n\nIf you would like to cancel or try again with a different description please use the buttons below.`,
+    }\n\nIf you would like to cancel or try again with a different ${type} please use the buttons below.`,
     options: {
       ...ik([
         [
@@ -64,7 +85,9 @@ const content_error = new Menu(async (from, args) => {
 const des_success = new Menu(async (from, args) => {
   return {
     text: `<b>Thank you for ${
-      args.ocr ? "editing the ocr text for" : "adding a decscription to"
+      args.cont.type == "sticker"
+        ? "editing the ocr text for"
+        : "adding a decscription to"
     } this ${args.cont.type}!</b>`,
     options: {
       ...ik([[butt("Close", `delete=true`)]]),
@@ -87,7 +110,9 @@ const cataloged = new Menu(async (from, args) => {
       ...ik([
         [
           butt("Add Description", `user_state=${args.cont.id}`),
-          butt("Edit OCR", `user_state=${args.cont.id}`),
+          ...(args.cont.type == "sticker"
+            ? [butt("Edit OCR", `user_state=${-1 * args.cont.id}`)]
+            : []),
         ],
       ]),
     },

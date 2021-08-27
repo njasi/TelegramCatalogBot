@@ -37,8 +37,6 @@ buttons = [
 // -t type    => show content of that type
 
 bot.on("inline_query", async (inline_query) => {
-  // console.log("\nINLINE QUERY \n", inline_query);
-  // TODO use verification middleware
   let buttons = [];
   let options = {
     cache_time: 0,
