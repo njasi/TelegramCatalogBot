@@ -82,7 +82,7 @@ Content.startup = async function () {
     const cur = to_parse[i];
     const user = await User.findByPk(cur.userId);
     await Content.forwardToImage(
-      cur.description,
+      cur.description.name.replace(/\([^(]*$/, ""), // strip out the username
       cur.description.text,
       cur.description.entities,
       cur.id
