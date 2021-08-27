@@ -58,6 +58,7 @@ const createApp = () => {
     if (!err.fake) {
       console.error(err.stack);
     }
+    console.log(err);
     res.status(err.status || 500).send(err.message || "Internal server error.");
   });
 };

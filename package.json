@@ -29,7 +29,8 @@
     "prompt": "^1.1.0",
     "puppeteer": "^10.2.0",
     "sequelize": "^6.6.5",
-    "webp-converter": "^2.3.3"
+    "webp-converter": "^2.3.3",
+    "ws": "^3.3.2"
   },
   "devDependencies": {
     "babel-eslint": "^10.1.0",

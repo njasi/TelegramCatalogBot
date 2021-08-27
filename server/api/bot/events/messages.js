@@ -56,7 +56,10 @@ bot.on(
         );
       } else {
         await bot.deleteMessage(response.chat.id, response.message_id);
-        await cont.display(message.chat.id, (confirm = true));
+        await cont.display(
+          message.chat.id,
+          ((confirm = true), (reply_to_message_id = message.message_id))
+        );
       }
     }
   }, (skip_on_command = true))
