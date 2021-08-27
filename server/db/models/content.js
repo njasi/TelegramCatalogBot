@@ -177,7 +177,7 @@ Content.addSticker = async function (message) {
   file_url = `https://api.telegram.org/file/bot${process.env.BOT_TOKEN}/${file_url.file_path}`;
 
   // OCR on any text that may exist
-  let text;
+  let text = "";
   try {
     text = await new Promise((res, rej) => {
       tesseract
