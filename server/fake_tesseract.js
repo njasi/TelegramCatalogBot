@@ -26,7 +26,7 @@ const download_image = async (url, image_path) =>
 async function tesseract_ocr(
   image_path,
   url = false,
-  flags = ["-l", "eng", "--oem", "1", "--psm", "3"]
+  options = ["quiet", "-l", "eng", "--oem", "1", "--psm", "3"]
 ) {
   let temp_image_path;
   if (url) {
@@ -34,26 +34,20 @@ async function tesseract_ocr(
     await download_image(image_path, temp_image_path);
   }
   result = await new Promise((res, rej) => {
-    console.log("\nRUN TESSERACT:\n", `tesseract`, [
-      temp_image_path,
-      "stdout",
-      "quiet",
-      ...flags,
+    console.log("\nRUN TESSERACT:\n", `tesseract ${temp_image_path} stdout`, [
+      // temp_image_path,
+      // "stdout",
+      ...options,
     ]);
-    
-    const ocr_res = spawn(`tesseract`, [
-      temp_image_path,
-      "stdout",
-      "quiet",
-      ...flags,
-    ]);
+
+    const ocr_res = spawn(`tesseract`, [temp_image_path, "stdout", ...options]);
 
     ocr_res.stderr.on("data", (data) => {
       const str = data.toString();
       console.log("FAKE TESSERACT ERROR:\t", str);
       // bad check to ssee if its not a warning
       if (str.indexOf("Warning") == -1 && str.indexOf("Estimating") == -1) {
-        rej(error);
+        rej(data.toString());
       }
     });
 

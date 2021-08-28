@@ -205,7 +205,7 @@ Content.addSticker = async function (message) {
   // OCR on any text that may exist
   let text = "";
   try {
-    text = await tesseract_ocr(file_url, (url = true));
+    text = await tesseract_ocr(file_url, ((url = true), (options = [])));
     text = text.replace(/\s/g, " ");
   } catch (error) {
     // TODO: failed ocr message
