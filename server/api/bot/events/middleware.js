@@ -38,7 +38,8 @@ async function verifyUser(telegram_id) {
     process.env.VERIFY_CHAT_ID,
     telegram_id
   );
-  if (telegram_user.user) {
+  console.log("\nVERIFY USER TELERGAM:\n", telegram_user);
+  if (telegram_user.user && telegram_user.status != "left") {
     let user;
     const first = telegram_user.user.first_name || "";
     const last = telegram_user.user.last_name

@@ -27,7 +27,15 @@ const cancel = new Menu(async (from, args) => {
   return { text, options };
 }, "cancel");
 
+const verify = new Menu(async (from, args) => {
+  return {
+    text: `To use this bot you need to be in The Dabney Chat™.\n\nIf you're in Dabney just ask for an invite from someone.\n\nIf you have any questions contact ${process.env.ADMIN_NAME} (@${process.env.ADMIN_USERNAME}).`,
+    options: { ...ik([[butt("Ok", "delete=true")]]) },
+  };
+}, "verify");
+
 module.exports = {
   start, // the start menu
-  cancel, // cancel everything
+  cancel, // cancel everything,
+  verify,
 };

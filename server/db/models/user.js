@@ -25,7 +25,7 @@ const User = db.define("user", {
    */
   misc: {
     type: Sequelize.JSON,
-    defaultValue: {},
+    defaultValue: { favorites: {} },
   },
 });
 
