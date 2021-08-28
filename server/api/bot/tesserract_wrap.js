@@ -24,6 +24,12 @@ const download_image = async (url, image_path) =>
       })
   );
 
+// none of these versions actually work on heroku... even with buildpacks
+// TODO get this to work or use another ocr
+async function tesseract_ocr(image_path, options = {}) {
+  return "";
+}
+
 // async function tesseract_ocr(
 //   image_path,
 //   url = false,
@@ -78,12 +84,6 @@ const download_image = async (url, image_path) =>
 //   oem: 1,
 //   psm: 3,
 // };
-
-// none of these versions actually work on heroku... even with buildpacks
-// TODO get this to work or use another ocr
-async function tesseract_ocr(image_path, options = {}) {
-  return "";
-}
 
 // async function tesseract_ocr(image_path, options = {}) {
 //   let temp_image_path = image_path;

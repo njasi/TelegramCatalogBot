@@ -7,7 +7,7 @@ const bot = require("../bot");
 /**
  *
  */
-const menu_type_switch = async (data) => {
+const menu_type_switch = async (data, query) => {
   if (data.send_image) {
     // switch into a menu with an image, note the text limit (1024 char) change somewhere (from 4096)
     await bot.deleteMessage(query.message.chat.id, query.message.message_id);
@@ -57,7 +57,7 @@ async function swapMenu(query, params) {
       from_swap: true,
     });
 
-    const message = await menu_type_switch(data);
+    const message = await menu_type_switch(data, query);
 
     // TODO deal with the message
   } catch (error) {

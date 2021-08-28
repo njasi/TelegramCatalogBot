@@ -44,10 +44,10 @@ function flag_to_options(flag, user) {
       return { order: Sequelize.literal("random()") };
     }
     case "f": {
-      if (misc.user.favorites) {
+      if (user.misc.favorites) {
         return {
           and: {
-            [Op.or]: misc.user.favorites.map((fav) => ({ id: fav })),
+            [Op.or]: user.misc.favorites.map((fav) => ({ id: fav })),
           },
         };
       } else {

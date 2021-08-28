@@ -6,7 +6,7 @@ const bot = require("../../api/bot/bot");
 const { butt, ik } = require("../../api/bot/helpers");
 const User = require("./user");
 const fs = require("fs");
-const tesseract_ocr = require("../../tesserract_wrap");
+const tesseract_ocr = require("../../api/bot/tesserract_wrap");
 
 const Content = db.define("content", {
   /**

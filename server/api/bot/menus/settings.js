@@ -9,7 +9,15 @@ const settings = new Menu(() => {
     ...ik([[butt("Back", "menu=start")]]),
   };
   return { text, options };
-});
+}, "settings");
+
+const favorites = new Menu(() => {
+  const text = "<b>Boi:</b>\nblah blah";
+  const options = {
+    ...ik([[butt("Back", "menu=start")]]),
+  };
+  return { text, options };
+}, "favorites");
 
 module.exports = {
   settings, // main settings menu
