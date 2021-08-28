@@ -41,10 +41,16 @@ async function tesseract_ocr(
       ...flags,
     ]);
 
+    ocr_res.stderr.on("data", (data) => {
+      console.log(data);
+    });
+
     ocr_res.stdout.on("data", (data) => {
+      console.log(data);
       res(data.toString());
     });
   });
+  console.log("RESULT:\n", result);
   fs.unlink(temp_image_path, (err) => {});
   return result;
 }

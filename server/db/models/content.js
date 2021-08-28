@@ -187,7 +187,6 @@ Content.prototype.to_inline_button = function () {
  * Sticker specific stuff
  */
 Content.addSticker = async function (message) {
-  // TODO: use the createstickerset method to make an archive of stickers so they can never be deleted
   // find who is submitting this to the bot
   const user = await User.findOne({ where: { telegram_id: message.from.id } });
   const exists = await Content.findAll({
