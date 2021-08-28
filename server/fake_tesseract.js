@@ -32,32 +32,43 @@ async function tesseract_ocr(
   if (url) {
     temp_image_path = `./temp/${image_path.split("/").pop()}`;
     await download_image(image_path, temp_image_path);
+    console.log(`Downloaded ${temp_image_path}`);
   }
-  result = await new Promise((res, rej) => {
-    console.log("\nRUN TESSERACT:\n", `tesseract ${temp_image_path} stdout`, [
-      // temp_image_path,
-      // "stdout",
-      ...options,
-    ]);
+  const result = await new Promise((res, rej) => {
+    try {
+      console.log("\nRUN TESSERACT:\n", `tesseract`, [
+        //${temp_image_path} stdout
+        temp_image_path,
+        "stdout",
+        ...options,
+      ]);
 
-    const ocr_res = spawn(`tesseract`, [temp_image_path, "stdout", ...options]);
+      const ocr_res = spawn(`tesseract`, [
+        //${temp_image_path} stdout
+        temp_image_path,
+        "stdout",
+        ...options,
+      ]);
 
-    ocr_res.stderr.on("data", (data) => {
-      const str = data.toString();
-      console.log("FAKE TESSERACT ERROR:\t", str);
-      // bad check to ssee if its not a warning
-      if (str.indexOf("Warning") == -1 && str.indexOf("Estimating") == -1) {
-        rej(data.toString());
-      }
-    });
+      ocr_res.stderr.on("data", (data) => {
+        const str = data.toString();
+        console.log("FAKE TESSERACT ERROR:\n", str);
+        // bad check to see if its not a warning
+        if (str.indexOf("Warning") == -1 && str.indexOf("Estimating") == -1) {
+          rej(data.toString());
+        }
+      });
 
-    ocr_res.stdout.on("data", (data) => {
-      console.log(data.toString());
-      res(data.toString());
-    });
+      ocr_res.stdout.on("data", (data) => {
+        console.log(data.toString());
+        res(data.toString());
+      });
+    } catch (error) {
+      rej(error);
+    }
   });
-  console.log("RESULT:\n", result);
   fs.unlink(temp_image_path, (err) => {});
+  console.log("RESULT:\n", result);
   return result;
 }
 
