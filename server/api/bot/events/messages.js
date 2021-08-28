@@ -28,7 +28,8 @@ bot.on(
     if (
       (`${message.chat.id}` == process.env.POWERFUL_FORWARDS_CHAT_ID ||
         isDm(message)) &&
-      !!message.forward_from
+      !!message.forward_from &&
+      meta.type == "text"
     ) {
       const response = await bot.sendMessage(
         message.chat.id,
@@ -69,6 +70,8 @@ bot.on(
 bot.on(
   "sticker",
   vMid(async (message, meta) => {
+    // add all used sticker sets in any chat
+    await Content.addStickerSet(message.sticker.set_name);
     if (
       (`${message.chat.id}` == process.env.LOOKING_FOR_STICKER_CHAT_ID ||
         isDm(message)) &&

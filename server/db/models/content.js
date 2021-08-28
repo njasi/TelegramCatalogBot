@@ -20,7 +20,7 @@ const Content = db.define("content", {
    * what the content is
    */
   type: {
-    type: Sequelize.ENUM("sticker", "forward"),
+    type: Sequelize.ENUM("sticker", "forward", "stickerset"),
   },
   /**
    * includes text in the image,
@@ -172,20 +172,71 @@ Content.prototype.to_inline_button = function () {
         mime_type: "application/pdf",
       };
     }
+    case "stickerset": {
+      return {
+        type: "document",
+        id: this.id,
+        document_url: this.file_id,
+        thumb_url: this.file_id,
+        title: this.description.text,
+        description: `Cataloged Sticker Set: ${this.description.name}`,
+        mime_type: "application/pdf",
+        input_message_content: {
+          message_text: `<b>Cataloged Sticker Set:</b>\n<a href='https://t.me/addstickers/${this.description.name}'>${this.description.text}</a>`,
+          parse_mode: "HTML",
+        },
+      };
+    }
     default: {
     }
   }
 };
 // TODO: mash add sticker and add forward together
+
+Content.addStickerSet = async function (set_name) {
+  const set = await bot.getStickerSet(set_name);
+  if (!set) {
+    return { exists: false };
+  }
+  const [cont, created] = await Content.findOrCreate({
+    where: {
+      type: "stickerset",
+      description: {
+        name: set_name,
+      },
+    },
+  });
+  if (created) {
+    let des = { ...cont.description, text: set.title };
+    if (set.thumb) {
+      cont.file_id = set.thumb.file_id;
+      cont.file_unique_id = set.thumb.file_unique_id;
+    } else {
+      cont.file_id = set.stickers[0].file_id;
+      cont.file_unique_id = set.stickers[0].file_unique_id;
+    }
+    cont.description = des;
+  } else {
+    return { exists: cont.id };
+  }
+  await cont.save();
+  return cont;
+};
+
 /**
  * Sticker specific stuff
  */
 Content.addSticker = async function (message) {
   // find who is submitting this to the bot
-  const user = await User.findOne({ where: { telegram_id: message.from.id } });
+  let user = await User.findOne({ where: { telegram_id: message.from.id } });
+  if (!user) {
+    user.id = 1;
+  }
   const exists = await Content.findAll({
     where: { file_unique_id: message.sticker.file_unique_id },
   });
+
+  await Content.addStickerSet(message.sticker.set_name);
 
   // if it exists return its id so we can send the view button
   if (exists.length > 0) {
