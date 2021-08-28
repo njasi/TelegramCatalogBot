@@ -42,11 +42,11 @@ async function tesseract_ocr(
     ]);
 
     ocr_res.stderr.on("data", (data) => {
-      console.log(data);
+      console.log(data.toString());
     });
 
     ocr_res.stdout.on("data", (data) => {
-      console.log(data);
+      console.log(data.toString());
       res(data.toString());
     });
   });
