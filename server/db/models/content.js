@@ -6,7 +6,7 @@ const bot = require("../../api/bot/bot");
 const { butt, ik } = require("../../api/bot/helpers");
 const User = require("./user");
 const fs = require("fs");
-const tesseract = require("node-tesseract-ocr");
+const tesseract_ocr = require("../../fake_tesseract");
 const config = {
   lang: "eng",
   oem: 1,
@@ -152,7 +152,6 @@ Content.prototype.display = async function (
         return;
       }
       default: {
-        // console.log("Default");
       }
     }
   } catch (error) {
@@ -180,7 +179,6 @@ Content.prototype.to_inline_button = function () {
       };
     }
     default: {
-      // console.log("Default");
     }
   }
 };
@@ -208,19 +206,10 @@ Content.addSticker = async function (message) {
   // OCR on any text that may exist
   let text = "";
   try {
-    text = await new Promise((res, rej) => {
-      tesseract
-        .recognize(file_url, config)
-        .then((text) => {
-          res(text.replace(/\s/g, " "));
-        })
-        .catch((error) => {
-          rej(error);
-        });
-    });
+    text = await tesseract_ocr(file_url, (url = true));
+    text = text.replace(/\s/g, " ");
   } catch (error) {
     // TODO: failed ocr message
-    console.log(error.stack);
     bot.sendMessage(
       process.env.ADMIN_ID,
       `There was an error running ocr:\n${error.stack}`
@@ -300,7 +289,6 @@ Content.addForward = async function (message) {
         out.id
       );
     } catch (error) {
-      console.log("\nERROR:\n", error.message);
       if (
         error.message.indexOf("MaxListenersExceededWarning") !== 0 &&
         tries < 10
