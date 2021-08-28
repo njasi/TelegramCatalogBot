@@ -72,7 +72,6 @@ Content.startup = async function () {
   const to_parse = await Content.findAll({
     where: { type: "forward", file_id: null },
   });
-  console.log(`Found ${to_parse.length} forwards to try parsing`);
   for (let i = 0; i < to_parse.length; i++) {
     const cur = to_parse[i];
     const user = await User.findByPk(cur.userId);
