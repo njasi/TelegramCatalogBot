@@ -6,12 +6,7 @@ const bot = require("../../api/bot/bot");
 const { butt, ik } = require("../../api/bot/helpers");
 const User = require("./user");
 const fs = require("fs");
-const tesseract_ocr = require("../../fake_tesseract");
-const config = {
-  lang: "eng",
-  oem: 1,
-  psm: 3,
-};
+const tesseract_ocr = require("../../tesserract_wrap");
 
 const Content = db.define("content", {
   /**
@@ -205,7 +200,9 @@ Content.addSticker = async function (message) {
   // OCR on any text that may exist
   let text = "";
   try {
-    text = await tesseract_ocr(file_url, true, []);
+    text = await tesseract_ocr(file_url, { url: true });
+    // text =
+
     text = text.replace(/\s/g, " ");
   } catch (error) {
     // TODO: failed ocr message

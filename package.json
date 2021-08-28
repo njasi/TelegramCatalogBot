@@ -29,6 +29,7 @@
     "prompt": "^1.1.0",
     "puppeteer": "^10.2.0",
     "sequelize": "^6.6.5",
+    "tesseract.js": "^2.1.5",
     "webp-converter": "^2.3.3",
     "ws": "^3.3.2"
   },
