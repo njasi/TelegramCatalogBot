@@ -18,7 +18,10 @@ bot.on("inline_query", async (inline_query) => {
     options.switch_pm_parameter = "verify";
   } else {
     query_options = await create_query(inline_query.query);
-    const content = await Content.findAll({ limit: 50, ...query_options });
+    let content = [];
+    try {
+      content = await Content.findAll({ limit: 50, ...query_options });
+    } catch (error) {}
     buttons = content.map((c) => c.to_inline_button());
     if (buttons.length == 0) {
       options.switch_pm_text = "Catalog What You're Missing";
