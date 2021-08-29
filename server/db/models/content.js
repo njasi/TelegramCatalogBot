@@ -163,24 +163,25 @@ Content.prototype.to_inline_button = function () {
       return {
         type: "document",
         id: this.id,
-        document_url: this.file_id,
+        document_file_id: this.file_id,
         thumb_url: this.file_id,
-        title: this.description.text,
+        title:
+          this.description.text.trim().length == 0
+            ? "  "
+            : this.description.text,
         description: `${
           this.type[0].toUpperCase() + this.type.substr(1)
         } from ${this.description.name.split("(")[0]}`,
-        mime_type: "application/pdf",
+        mime_type: "application/octet-stream",
       };
     }
     case "stickerset": {
       return {
-        type: "document",
+        type: "article",
         id: this.id,
-        document_url: this.file_id,
-        thumb_url: this.file_id,
         title: this.description.text,
+        url: `https://t.me/addstickers/${this.description.name}`,
         description: `Cataloged Sticker Set: ${this.description.name}`,
-        mime_type: "application/pdf",
         input_message_content: {
           message_text: `<b>Cataloged Sticker Set:</b>\n<a href='https://t.me/addstickers/${this.description.name}'>${this.description.text}</a>`,
           parse_mode: "HTML",
@@ -217,6 +218,7 @@ Content.addStickerSet = async function (set_name) {
     }
     cont.description = des;
   } else {
+    cont.uses++;
     return { exists: cont.id };
   }
   await cont.save();
@@ -233,7 +235,7 @@ Content.addSticker = async function (message) {
     user.id = 1;
   }
   const exists = await Content.findAll({
-    where: { file_unique_id: message.sticker.file_unique_id },
+    where: { type: "sticker", file_unique_id: message.sticker.file_unique_id },
   });
 
   await Content.addStickerSet(message.sticker.set_name);

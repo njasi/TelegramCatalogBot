@@ -11,7 +11,7 @@ const prompt = require("prompt");
 if (module === require.main) {
   prompt.start();
   prompt.get(
-    ["DATABASE_URL", "HORNY_CHATS_IDS", "Are you sure about this? (YES|NO)"],
+    ["DATABASE_URL", "Are you sure about this? (YES|NO)"],
     (err, result) => {
       if (result["Are you sure about this? (YES|NO)"] !== "YES") {
         console.log("Action aborted as you are not sure");
@@ -27,7 +27,6 @@ if (module === require.main) {
                 ">>>>>DO NOT DO THIS ON HEROKU<<<<\nLast chance for you to stop. (CONTINUE|STOP)"
               ] === "CONTINUE"
             ) {
-              process.env.HORNY_CHATS_IDS = result.HORNY_CHATS_IDS;
               if (result.DATABASE_URL) {
                 console.log(
                   `Running seed with database url...`

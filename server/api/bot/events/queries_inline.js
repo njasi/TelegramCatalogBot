@@ -13,7 +13,6 @@ bot.on("inline_query", async (inline_query) => {
   v_status = await verifyUser(inline_query.from.id);
 
   if (!v_status) {
-    buttons = [];
     options.switch_pm_text = "Please Verify First";
     options.switch_pm_parameter = "verify";
   } else {
@@ -22,7 +21,9 @@ bot.on("inline_query", async (inline_query) => {
     try {
       content = await Content.findAll({ limit: 50, ...query_options });
     } catch (error) {}
-    buttons = content.map((c) => c.to_inline_button());
+    for (let i = 0; i < content.length; i++) {
+      buttons.push(content[i].to_inline_button());
+    }
     if (buttons.length == 0) {
       options.switch_pm_text = "Catalog What You're Missing";
       options.switch_pm_parameter = "catalog";
